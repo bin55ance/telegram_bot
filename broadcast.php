@@ -1,49 +1,53 @@
 <?php
-// --- BOT CONFIG ---
-$token  = "8528088909:AAFYlRmpHuFHl8RQAivl435evP1EulfvbTI"; // your bot token
-$apiURL = "https://api.telegram.org/bot$token/";
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// --- CONNECT TO DATABASE ---
-include 'db_connect.php';
+// Include your database connection
+require_once("db_connect.php");
 
-// --- FETCH ALL USERS ---
+// Your bot token
+$token = "8327894786:AAEghp4klh-Zg6jwOD2eXyAxlLisitc4ezE";
+
+// Message you want to broadcast
+$message = "🚨 Tesla Inventory Update!\n\nCheck our site: https://teslainventory.unaux.com";
+
+// Function to send message using cURL
+function sendMessage($token, $chat_id, $message) {
+    $url = "https://api.telegram.org/bot$token/sendMessage";
+
+    $data = [
+        'chat_id' => $chat_id,
+        'text'    => $message
+    ];
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    $response = curl_exec($ch);
+
+    if (curl_errno($ch)) {
+        echo "cURL Error: " . curl_error($ch) . "<br>";
+    } else {
+        echo "Sent to $chat_id: $response<br>";
+    }
+
+    curl_close($ch);
+    return $response;
+}
+
+// Get all users from telegram_users table
 $result = $conn->query("SELECT chat_id FROM telegram_users");
 
 if ($result && $result->num_rows > 0) {
-    $sentCount = 0;
     while ($row = $result->fetch_assoc()) {
         $chat_id = $row['chat_id'];
-
-        // --- EDIT THIS MESSAGE FOR NEW ADS ---
-        $text = "🔥 New Announcement!\nInvest now and earn daily returns.";
-        $keyboard = [
-            "inline_keyboard" => [
-                [
-                    [
-                        "text" => "⚡ Invest Now, earn more. Invite friends and receive more ⚡",
-                        "url"  => "https://teslainventory.unaux.com/?ref=8"
-                    ]
-                ]
-            ]
-        ];
-
-        // --- SEND MESSAGE ---
-        $payload = [
-            "chat_id"      => $chat_id,
-            "text"         => $text,
-            "reply_markup" => json_encode($keyboard)
-        ];
-
-        $response = file_get_contents($apiURL . "sendMessage?" . http_build_query($payload));
-
-        $sentCount++;
+        sendMessage($token, $chat_id, $message);
     }
-
-    // --- SHOW RESULT IN BROWSER ---
-    echo "✅ Broadcast sent to $sentCount users.";
+    echo "Broadcast sent to all users!";
 } else {
-    echo "⚠️ No users found in database.";
+    echo "No users found in telegram_users table.";
 }
-
-$conn->close();
 ?>
