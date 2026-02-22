@@ -1,11 +1,13 @@
 <?php
 // --- BOT CONFIG ---
-$token = "8528088909:AAFYlRmpHuFHl8RQAivl435evP1EulfvbTI"; // your bot token
+$token  = "8528088909:AAFYlRmpHuFHl8RQAivl435evP1EulfvbTI"; // your bot token
 $apiURL = "https://api.telegram.org/bot$token/";
 
 // --- GET UPDATE FROM TELEGRAM ---
 $update = json_decode(file_get_contents("php://input"), true);
-if (!$update || !isset($update["message"])) { exit; }
+if (!$update || !isset($update["message"])) {
+    exit; // no valid update
+}
 
 $chat_id = $update["message"]["chat"]["id"];
 
@@ -20,11 +22,12 @@ $stmt->bind_param("i", $chat_id);
 if ($stmt->execute()) {
     file_put_contents("debug_log.txt", "Saved chat_id: $chat_id\n", FILE_APPEND);
 } else {
-    file_put_contents("debug_log.txt", "Failed to save chat_id: $chat_id\n", FILE_APPEND);
+    file_put_contents("debug_log.txt", "DB error: " . $stmt->error . "\n", FILE_APPEND);
 }
 
 $stmt->close();
+$conn->close();
 
-// --- DO NOTHING ELSE (no reply to user) ---
+// --- DO NOTHING ELSE (silent bot) ---
 exit;
 ?>
