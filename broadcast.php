@@ -1,24 +1,46 @@
 <?php
-$token = "8528088909:AAFYlRmpHuFHl8RQAivl435evP1EulfvbTI";
+// --- BOT CONFIG ---
+$token  = "8528088909:AAFYlRmpHuFHl8RQAivl435evP1EulfvbTI"; // your bot token
 $apiURL = "https://api.telegram.org/bot$token/";
 
+// --- CONNECT TO DATABASE ---
 include 'db_connect.php';
+
+// --- FETCH ALL USERS ---
 $result = $conn->query("SELECT chat_id FROM telegram_users");
 
-while ($row = $result->fetch_assoc()) {
-    $chat_id = $row['chat_id'];
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $chat_id = $row['chat_id'];
 
-    // --- EDIT THIS MESSAGE FOR NEW ADS ---
-    $text = "🔥 New Announcement!\nInvest now and earn daily returns.";
-    $keyboard = [
-        "inline_keyboard" => [
-            [
-                ["text" => "⚡ Invest Now,earn more.invite friends and receive more ⚡", "url" => "https://teslainventory.unaux.com/?ref=8"]
+        // --- EDIT THIS MESSAGE FOR NEW ADS ---
+        $text = "🔥 New Announcement!\nInvest now and earn daily returns.";
+        $keyboard = [
+            "inline_keyboard" => [
+                [
+                    [
+                        "text" => "⚡ Invest Now, earn more. Invite friends and receive more ⚡",
+                        "url"  => "https://teslainventory.unaux.com/?ref=8"
+                    ]
+                ]
             ]
-        ]
-    ];
+        ];
 
-    file_get_contents($apiURL . "sendMessage?chat_id=$chat_id&text=" . urlencode($text) .
-        "&reply_markup=" . urlencode(json_encode($keyboard)));
+        // --- SEND MESSAGE ---
+        $payload = [
+            "chat_id"      => $chat_id,
+            "text"         => $text,
+            "reply_markup" => json_encode($keyboard)
+        ];
+
+        $response = file_get_contents($apiURL . "sendMessage?" . http_build_query($payload));
+
+        // --- LOGGING ---
+        file_put_contents("broadcast_log.txt", "Sent to $chat_id: $response\n", FILE_APPEND);
+    }
+} else {
+    file_put_contents("broadcast_log.txt", "No users found in DB\n", FILE_APPEND);
 }
+
+$conn->close();
 ?>
