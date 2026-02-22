@@ -10,6 +10,7 @@ include 'db_connect.php';
 $result = $conn->query("SELECT chat_id FROM telegram_users");
 
 if ($result && $result->num_rows > 0) {
+    $sentCount = 0;
     while ($row = $result->fetch_assoc()) {
         $chat_id = $row['chat_id'];
 
@@ -35,11 +36,13 @@ if ($result && $result->num_rows > 0) {
 
         $response = file_get_contents($apiURL . "sendMessage?" . http_build_query($payload));
 
-        // --- LOGGING ---
-        file_put_contents("broadcast_log.txt", "Sent to $chat_id: $response\n", FILE_APPEND);
+        $sentCount++;
     }
+
+    // --- SHOW RESULT IN BROWSER ---
+    echo "✅ Broadcast sent to $sentCount users.";
 } else {
-    file_put_contents("broadcast_log.txt", "No users found in DB\n", FILE_APPEND);
+    echo "⚠️ No users found in database.";
 }
 
 $conn->close();
