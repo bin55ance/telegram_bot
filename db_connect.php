@@ -2,9 +2,9 @@
 // db_connect.php
 
 // Database connection settings (from your FreeHost / InfinityFree control panel)
-$servername = "sql308.byetcluster.com";  // SQL hostname
-$username   = "ezyro_41193808";     // Database username
-$password   = "mnh7rkby";           // Database password
+$servername = "sql308.byetcluster.com";   // ✅ Correct SQL hostname
+$username   = "ezyro_41193808";           // Database username
+$password   = "mnh7rkby";                 // Database password
 $dbname     = "ezyro_41193808_teslainventory"; // Database name
 
 // Create connection
